@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About — Tracenil</title>
+<meta name="description" content="Why Tracenil exists: a privacy tool you can actually verify. Built as a single open-source file with no dependencies and no tracking." />
+<link rel="canonical" href="https://tracenil.com/about.html" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="index.html">Tracenil<span class="dot">.</span></a>
+    <nav class="top-links">
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+
+  <main class="doc">
+    <div class="updated">About</div>
+    <h1>A privacy tool you can verify.</h1>
+    <p class="intro">Tracenil removes hidden metadata from your photos — and is built so you never have to take that claim on faith.</p>
+
+    <h2>The problem</h2>
+    <p>Every photo your phone or camera produces carries hidden EXIF metadata: the GPS coordinates where it was taken, your device make and model, the exact date and time. Share that photo online and the metadata usually goes with it — quietly revealing where you live, what you own, and when you were there.</p>
+
+    <h2>Why another EXIF remover?</h2>
+    <p>There are many tools that strip metadata. Most ask you to upload your photo to their server, and most simply tell you "we process everything privately." You have no way to check whether that's true. For a tool whose entire job is protecting your privacy, "just trust us" isn't good enough.</p>
+    <p>Tracenil takes the opposite approach. Everything happens in your browser, on your device, and the proof is built in:</p>
+    <ul>
+      <li><strong>Watch the network.</strong> Open your browser's dev tools and you'll see no request ever carries your image anywhere.</li>
+      <li><strong>Pull the plug.</strong> Turn off your internet and the tool still works — there is no server in the loop.</li>
+      <li><strong>Read the code.</strong> The whole thing is a single HTML file with zero dependencies, open source for anyone to audit.</li>
+    </ul>
+
+    <h2>The "single file" philosophy</h2>
+    <p>Tracenil is deliberately one file with no frameworks, no trackers, and no build step. That's not a limitation — it's the point. When there's nothing hidden in a pile of dependencies, anyone can read the entire tool top to bottom in a few minutes and confirm exactly what it does. Transparency is easiest when there's less to hide it in.</p>
+
+    <h2>Who builds it</h2>
+    <p>Tracenil is built by a machine-learning researcher with a background in interpretable AI and on-device models. That background shapes where the project is going: privacy tooling that runs locally and, increasingly, that can <strong>show you why</strong> it made a decision rather than just asking you to trust the output.</p>
+
+    <h2>What's next</h2>
+    <p>EXIF removal is the starting point. The roadmap focuses on on-device privacy tools that stay verifiable: automatic face blurring, redaction of personal details in screenshots and documents, and explainable detection that highlights <em>why</em> something was flagged. Ideas and feedback are welcome on <a href="https://github.com/tracenil/tracenil" target="_blank" rel="noopener noreferrer">GitHub</a> or via our <a href="contact.html">contact page</a>.</p>
+  </main>
+
+  <footer>
+    <nav class="foot-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="contact.html">Contact</a>
+      <a href="https://github.com/tracenil/tracenil" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+    <p class="foot-note">Tracenil processes your images entirely in your browser. Your photos are never uploaded, stored, or shared.</p>
+  </footer>
+
+</div>
+</body>
+</html>
