@@ -615,11 +615,20 @@
 
     const rows = [];
     if(t.gps){
-      const lat = t.gps.lat.toFixed(6), lon = t.gps.lon.toFixed(6);
-      const map = 'https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'#map=15/'+lat+'/'+lon;
-      rows.push(row('Location',
-        '<span class="lead">'+lat+', '+lon+'</span>' +
-        '<small>This is where the photo was taken. <a href="'+map+'" target="_blank" rel="noopener noreferrer">open in map ↗</a></small>'));
+      const latNum = Number(t.gps.lat), lonNum = Number(t.gps.lon);
+      const valid = isFinite(latNum) && isFinite(lonNum) &&
+                    latNum >= -90 && latNum <= 90 && lonNum >= -180 && lonNum <= 180;
+      const lat = latNum.toFixed(6), lon = lonNum.toFixed(6);
+      const coordText = '<span class="lead">'+escapeHtml(lat)+', '+escapeHtml(lon)+'</span>';
+      if(valid){
+        const map = 'https://www.openstreetmap.org/?mlat='+encodeURIComponent(lat)+'&mlon='+encodeURIComponent(lon)+'#map=15/'+encodeURIComponent(lat)+'/'+encodeURIComponent(lon);
+        rows.push(row('Location',
+          coordText +
+          '<small>This is where the photo was taken. <a href="'+map+'" target="_blank" rel="noopener noreferrer">open in map ↗</a></small>'));
+      } else {
+        rows.push(row('Location',
+          coordText + '<small>This is where the photo was taken.</small>'));
+      }
     }
     if(t.make || t.model){
       rows.push(row('Device', escapeHtml([t.make, t.model].filter(Boolean).join(' '))));
