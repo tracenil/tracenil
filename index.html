@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tracenil — Remove EXIF Data From Your Photos (100% In Your Browser)</title>
+<meta name="description" content="Strip EXIF metadata — GPS location, camera model, date — from your photos for free. Everything runs in your browser. Your photos never leave your device. No uploads, no tracking, no account." />
+<meta name="keywords" content="remove exif, strip exif data, delete photo metadata, remove gps from photo, exif remover, clear image metadata" />
+<link rel="canonical" href="https://tracenil.com/" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Tracenil — Remove EXIF Data From Your Photos" />
+<meta property="og:description" content="Strip GPS, camera, and date metadata from photos. Runs entirely in your browser — nothing is ever uploaded." />
+<meta property="og:url" content="https://tracenil.com/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Tracenil — Remove EXIF Data From Your Photos" />
+<meta name="twitter:description" content="Strip GPS, camera, and date metadata from photos. Runs entirely in your browser — nothing is ever uploaded." />
+
+<style>
+  :root{
+    --ink:#0C0F14;
+    --panel:#141923;
+    --panel-2:#1B212D;
+    --line:rgba(255,255,255,0.08);
+    --line-strong:rgba(255,255,255,0.16);
+    --text:#EAEEF5;
+    --muted:#8B95A7;
+    --amber:#F2B33D;
+    --amber-dim:rgba(242,179,61,0.12);
+    --amber-line:rgba(242,179,61,0.32);
+    --mint:#56D9A3;
+    --mint-dim:rgba(86,217,163,0.12);
+    --mint-line:rgba(86,217,163,0.32);
+    --display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --radius:14px;
+    --maxw:1080px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(242,179,61,0.06), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, rgba(86,217,163,0.05), transparent 55%),
+      var(--ink);
+    color:var(--text);
+    font-family:var(--display);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 0;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-0.02em;font-size:18px;}
+  .brand svg{display:block;}
+  .brand .dot{color:var(--mint);}
+  .top-links{display:flex;gap:22px;font-size:14px;color:var(--muted);}
+  .top-links a{text-decoration:none;}
+  .top-links a:hover{color:var(--text);}
+  @media (max-width:560px){ .top-links{display:none;} }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:34px 0 14px;}
+  .eyebrow{
+    font-family:var(--mono);font-size:12.5px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--mint);display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;
+  }
+  .eyebrow .pulse{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 0 rgba(86,217,163,0.6);animation:pulse 2.6s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(86,217,163,0.45);}70%{box-shadow:0 0 0 9px rgba(86,217,163,0);}100%{box-shadow:0 0 0 0 rgba(86,217,163,0);}}
+  h1{
+    font-size:clamp(32px,5.4vw,56px);line-height:1.02;letter-spacing:-0.035em;
+    margin:0 0 18px;font-weight:760;max-width:16ch;
+  }
+  h1 .hl{color:var(--amber);}
+  .sub{font-size:clamp(15px,2.1vw,18px);color:var(--muted);max-width:54ch;margin:0;}
+
+  /* ---------- Tool ---------- */
+  .tool{margin:30px 0 8px;}
+  .dropzone{
+    position:relative;display:block;width:100%;cursor:pointer;
+    border:1.5px dashed var(--line-strong);border-radius:18px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+    padding:54px 26px;text-align:center;overflow:hidden;
+    transition:border-color .18s ease, background .18s ease, transform .18s ease;
+  }
+  .dropzone:hover,.dropzone:focus-visible{border-color:var(--amber-line);background:rgba(242,179,61,0.035);outline:none;}
+  .dropzone.drag{border-color:var(--mint);background:var(--mint-dim);transform:translateY(-1px);}
+  .dropzone .scanline{
+    position:absolute;left:0;right:0;top:0;height:2px;
+    background:linear-gradient(90deg, transparent, var(--amber-line), transparent);
+    opacity:.55;animation:scan 4.2s ease-in-out infinite;
+  }
+  @keyframes scan{0%{transform:translateY(0);}50%{transform:translateY(220px);}100%{transform:translateY(0);}}
+  .dz-icon{margin:0 auto 16px;width:48px;height:48px;color:var(--muted);}
+  .dz-title{font-size:19px;font-weight:650;letter-spacing:-0.01em;}
+  .dz-hint{color:var(--muted);font-size:14px;margin-top:7px;}
+  .dz-formats{font-family:var(--mono);font-size:11.5px;letter-spacing:0.08em;color:var(--muted);margin-top:18px;opacity:.8;}
+  .dropzone input{position:absolute;width:1px;height:1px;opacity:0;}
+
+  .trust{
+    display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:center;
+    margin:20px 0 0;font-size:13.5px;color:var(--muted);
+  }
+  .trust span{display:inline-flex;align-items:center;gap:8px;}
+  .trust .ck{color:var(--mint);}
+
+  /* ---------- Workspace (after load) ---------- */
+  .workspace{display:none;margin-top:8px;}
+  .workspace.on{display:block;}
+  .ws-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:18px;}
+  @media (max-width:780px){ .ws-grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .card-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:15px 18px;border-bottom:1px solid var(--line);
+  }
+  .card-head h3{margin:0;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;font-weight:650;color:var(--muted);font-family:var(--mono);}
+  .badge{font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;padding:4px 9px;border-radius:999px;border:1px solid var(--amber-line);color:var(--amber);background:var(--amber-dim);}
+  .badge.clean{border-color:var(--mint-line);color:var(--mint);background:var(--mint-dim);}
+
+  /* preview */
+  .preview-wrap{padding:18px;}
+  .preview-frame{
+    border-radius:10px;overflow:hidden;background:
+      repeating-conic-gradient(#1d2430 0% 25%, #161b25 0% 50%) 50%/22px 22px;
+    display:flex;align-items:center;justify-content:center;min-height:200px;
+  }
+  .preview-frame img{display:block;max-width:100%;max-height:340px;}
+  .file-meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--muted);}
+  .file-meta b{color:var(--text);font-weight:600;}
+
+  /* report */
+  .report{padding:8px 0 6px;font-family:var(--mono);}
+  .report-empty{padding:26px 18px;color:var(--muted);font-family:var(--mono);font-size:13.5px;line-height:1.7;}
+  .row{
+    display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start;
+    padding:12px 18px;border-bottom:1px solid var(--line);font-size:13px;
+  }
+  .row:last-child{border-bottom:none;}
+  .row .k{color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;font-size:11px;padding-top:2px;}
+  .row .v{color:var(--text);word-break:break-word;}
+  .row .v .lead{color:var(--amber);}
+  .row .v a{color:var(--mint);text-decoration:none;border-bottom:1px solid var(--mint-line);}
+  .row .v a:hover{border-bottom-color:var(--mint);}
+  .row .v small{display:block;color:var(--muted);margin-top:3px;font-size:11px;letter-spacing:0.02em;}
+
+  .report.cleaned .row .v{color:var(--mint);}
+  .report.cleaned .row .v .lead{color:var(--mint);}
+
+  /* action bar */
+  .actionbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px;}
+  .btn{
+    appearance:none;border:none;cursor:pointer;font-family:var(--display);
+    font-size:15px;font-weight:650;letter-spacing:-0.01em;
+    padding:13px 22px;border-radius:11px;transition:transform .12s ease, filter .15s ease, background .15s ease;
+    display:inline-flex;align-items:center;gap:9px;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--mint);color:#06231a;}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;filter:none;}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line-strong);}
+  .btn-ghost:hover{border-color:var(--text);}
+  .btn svg{width:18px;height:18px;}
+  .processing{display:inline-flex;align-items:center;gap:9px;color:var(--muted);font-family:var(--mono);font-size:13px;}
+  .spinner{width:15px;height:15px;border:2px solid var(--line-strong);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .result-note{
+    margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--mint);
+    display:none;align-items:center;gap:9px;
+  }
+  .result-note.on{display:inline-flex;}
+
+  /* ---------- Content sections ---------- */
+  .section{padding:64px 0 8px;}
+  .section h2{font-size:clamp(24px,3.4vw,32px);letter-spacing:-0.025em;margin:0 0 8px;font-weight:730;}
+  .section .lede{color:var(--muted);max-width:60ch;margin:0 0 30px;}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:780px){ .steps{grid-template-columns:1fr;} }
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
+  .step .num{font-family:var(--mono);font-size:12px;color:var(--mint);letter-spacing:0.1em;}
+  .step h4{margin:12px 0 7px;font-size:17px;letter-spacing:-0.01em;}
+  .step p{margin:0;color:var(--muted);font-size:14.5px;}
+
+  /* verify section */
+  .verify-intro{display:flex;align-items:flex-start;gap:14px;background:var(--panel);border:1px solid var(--mint-line);border-radius:var(--radius);padding:18px 20px;margin-bottom:22px;max-width:760px;}
+  .verify-intro svg{flex:none;color:var(--mint);margin-top:2px;}
+  .verify-intro p{margin:0;font-size:15px;color:var(--text);}
+  .verify-intro b{font-weight:650;}
+  .verify-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:780px){ .verify-steps{grid-template-columns:1fr;} }
+  .vstep{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;position:relative;}
+  .vstep .vnum{font-family:var(--mono);font-size:12px;color:var(--mint);letter-spacing:0.1em;display:flex;align-items:center;gap:8px;}
+  .vstep h4{margin:13px 0 8px;font-size:16.5px;letter-spacing:-0.01em;}
+  .vstep p{margin:0;color:var(--muted);font-size:14px;line-height:1.6;}
+  .vstep code{font-family:var(--mono);font-size:12.5px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--amber);white-space:nowrap;}
+  .vstep .kbd{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:6px;padding:2px 7px;color:var(--text);}
+
+  .faq{display:grid;gap:12px;max-width:760px;}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:2px 18px;}
+  details[open]{border-color:var(--line-strong);}
+  summary{cursor:pointer;list-style:none;padding:16px 0;font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;}
+  summary::-webkit-details-marker{display:none;}
+  summary .chev{color:var(--muted);transition:transform .2s ease;flex:none;}
+  details[open] summary .chev{transform:rotate(45deg);color:var(--mint);}
+  details p{margin:0 0 18px;color:var(--muted);font-size:14.5px;line-height:1.65;}
+
+  /* ---------- Footer ---------- */
+  footer{margin-top:72px;border-top:1px solid var(--line);padding:34px 0 50px;}
+  .foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:22px;align-items:center;}
+  .foot-links{display:flex;gap:22px;font-size:14px;color:var(--muted);flex-wrap:wrap;}
+  .foot-links a{text-decoration:none;}
+  .foot-links a:hover{color:var(--text);}
+  .foot-note{color:var(--muted);font-size:13px;max-width:42ch;}
+
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect x="2.2" y="2.2" width="21.6" height="21.6" rx="6.4" stroke="#56D9A3" stroke-width="1.6"/>
+        <path d="M7 16.4 L13.2 6.6 a2.4 2.4 0 0 1 4 2.5 L11 18.8 Z" fill="#F2B33D"/>
+        <path d="M7 16.4 L11 18.8 l-3.4 1 a0.7 0.7 0 0 1-0.9-0.9 Z" fill="#EAEEF5"/>
+      </svg>
+      Tracenil<span class="dot">.</span>
+    </div>
+    <nav class="top-links">
+      <a href="#how">How it works</a>
+      <a href="#verify">Verify</a>
+      <a href="#faq">FAQ</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+  </div>
+
+  <!-- Hero + Tool -->
+  <header class="hero">
+    <span class="eyebrow"><span class="pulse"></span>Runs in your browser · nothing uploaded</span>
+    <h1>Remove <span class="hl">EXIF data</span> from your photos.</h1>
+    <p class="sub">Every photo you take is tagged with hidden metadata — where you were, what device you used, the exact second. Tracenil strips it out, entirely on your device. Don't take our word for it — <a href="#verify" style="color:var(--mint);border-bottom:1px solid var(--mint-line);text-decoration:none;">verify it yourself</a>.</p>
+  </header>
+
+  <main class="tool">
+    <!-- Dropzone -->
+    <label class="dropzone" id="dropzone" tabindex="0" aria-label="Choose a photo or drop one here">
+      <span class="scanline" aria-hidden="true"></span>
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+        <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+      </svg>
+      <div class="dz-title">Drop a photo here, or click to choose</div>
+      <div class="dz-hint">Your photo is read on this device only. It is never sent anywhere.</div>
+      <div class="dz-formats">JPEG · PNG · WEBP</div>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" />
+    </label>
+
+    <div class="trust">
+      <span><span class="ck">✓</span> No uploads</span>
+      <span><span class="ck">✓</span> No tracking</span>
+      <span><span class="ck">✓</span> No account</span>
+      <span><span class="ck">✓</span> Works offline</span>
+    </div>
+
+    <!-- Workspace -->
+    <section class="workspace" id="workspace" aria-live="polite">
+      <div class="ws-grid">
+
+        <!-- Report card -->
+        <div class="card">
+          <div class="card-head">
+            <h3>Metadata report</h3>
+            <span class="badge" id="reportBadge">Exposed</span>
+          </div>
+          <div class="report" id="report"></div>
+        </div>
+
+        <!-- Preview card -->
+        <div class="card">
+          <div class="card-head">
+            <h3>Preview</h3>
+            <span class="badge clean" id="previewBadge" style="display:none;">Clean copy</span>
+          </div>
+          <div class="preview-wrap">
+            <div class="preview-frame">
+              <img id="previewImg" alt="Your selected photo" />
+            </div>
+            <div class="file-meta" id="fileMeta"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="actionbar" id="actionbar">
+        <button class="btn btn-primary" id="scrubBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Scrub metadata
+        </button>
+        <button class="btn btn-ghost" id="resetBtn">Choose another photo</button>
+      </div>
+
+      <div class="result-note" id="resultNote">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        <span id="resultNoteText"></span>
+      </div>
+    </section>
+  </main>
+
+  <!-- How it works -->
+  <section class="section" id="how">
+    <h2>How it works</h2>
+    <p class="lede">Three steps, zero servers. The whole process happens inside this page, on your machine.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">STEP 01</div>
+        <h4>Drop your photo</h4>
+        <p>Pick any JPEG, PNG, or WebP. Tracenil reads it locally and shows you exactly which hidden tags it carries — location, device, timestamps and more.</p>
+      </div>
+      <div class="step">
+        <div class="num">STEP 02</div>
+        <h4>Scrub the metadata</h4>
+        <p>One click rebuilds the image without its metadata. Your photo's orientation is preserved, so nothing ends up sideways.</p>
+      </div>
+      <div class="step">
+        <div class="num">STEP 03</div>
+        <h4>Download the clean copy</h4>
+        <p>Save a stripped version you can post or share safely. The original on your disk is left untouched.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- What is EXIF -->
+  <section class="section" id="about">
+    <h2>What is EXIF data, and why remove it?</h2>
+    <p class="lede" style="max-width:72ch;">
+      EXIF (Exchangeable Image File Format) is a block of information your camera or phone writes into every photo. It can include the GPS coordinates where the shot was taken, the make and model of your device, the lens, and the exact date and time. Useful for organizing your own library — but when you post a photo online, that data often travels with it. Removing EXIF before sharing means a picture of your living room no longer carries your home's coordinates, and a photo sent to a stranger no longer reveals your phone model or daily routine.
+    </p>
+  </section>
+
+  <!-- Verify -->
+  <section class="section" id="verify">
+    <h2>Don't trust us. Verify it.</h2>
+    <p class="lede">Every privacy tool claims your data stays private. We'd rather you check than take our word for it. Here are three ways to prove it yourself — no expertise required.</p>
+
+    <div class="verify-intro">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      <p>The strongest proof isn't a promise on a landing page — it's that you can watch the network yourself, pull the plug and see it still work, and read every line of the code. A tool with nothing to hide invites the audit.</p>
+    </div>
+
+    <div class="verify-steps">
+      <div class="vstep">
+        <div class="vnum">CHECK 01</div>
+        <h4>Watch the network</h4>
+        <p>Open your browser's developer tools (<span class="kbd">F12</span>), go to the <b>Network</b> tab, then drop in a photo and scrub it. You'll see no upload — no request carries your image anywhere. Nothing leaves the page.</p>
+      </div>
+      <div class="vstep">
+        <div class="vnum">CHECK 02</div>
+        <h4>Pull the plug</h4>
+        <p>Load this page, then turn off your Wi-Fi or unplug the network. Now scrub a photo. It still works — because all the processing happens on your machine, with no server involved.</p>
+      </div>
+      <div class="vstep">
+        <div class="vnum">CHECK 03</div>
+        <h4>Read the code</h4>
+        <p>The whole tool is one HTML file with zero dependencies — no frameworks, no trackers, no build step. Read it end to end in a few minutes on <a href="https://github.com/tracenil/tracenil" target="_blank" rel="noopener noreferrer" style="color:var(--mint);border-bottom:1px solid var(--mint-line);text-decoration:none;">GitHub</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <h2>Frequently asked questions</h2>
+    <p class="lede">The short version: it's free, and your photos stay on your device.</p>
+    <div class="faq">
+      <details>
+        <summary>Does Tracenil upload my photos?<span class="chev">+</span></summary>
+        <p>No. There is no server to upload to. Everything — reading the metadata, stripping it, and saving the clean copy — happens inside your browser. You can open your network tools and watch: no image data ever leaves the page. You can even disconnect from the internet after the page loads and it still works.</p>
+      </details>
+      <details>
+        <summary>Which file formats are supported?<span class="chev">+</span></summary>
+        <p>JPEG, PNG, and WebP. JPEG photos from phones and cameras carry the most metadata, including GPS, so that's where Tracenil helps most. PNG and WebP files usually carry little or none, but they're cleaned the same way.</p>
+      </details>
+      <details>
+        <summary>Will removing EXIF reduce my photo's quality?<span class="chev">+</span></summary>
+        <p>The visible image is preserved. JPEGs are re-saved at high quality, which can change the file size slightly, but there is no meaningful loss for normal viewing or sharing. PNGs are lossless.</p>
+      </details>
+      <details>
+        <summary>Will my photo come out rotated?<span class="chev">+</span></summary>
+        <p>No. Some photos rely on an orientation tag to display the right way up. Tracenil reads that tag and bakes the correct rotation into the pixels before removing the metadata, so the clean copy looks exactly like the original.</p>
+      </details>
+      <details>
+        <summary>Is it really free?<span class="chev">+</span></summary>
+        <p>Yes. No account, no sign-up, no limits on how many photos you clean. Use it as often as you like.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="foot-grid">
+      <div class="brand" style="font-size:16px;">
+        Tracenil<span class="dot">.</span>
+      </div>
+      <nav class="foot-links">
+        <a href="#about">About</a>
+        <a href="#verify">Verify</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+        <a href="https://github.com/tracenil/tracenil" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+    </div>
+    <p class="foot-note" style="margin-top:18px;">Tracenil processes your images entirely in your browser. Your photos are never uploaded, stored, or shared.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Elements ----------
+  const dropzone   = document.getElementById('dropzone');
+  const fileInput  = document.getElementById('fileInput');
+  const workspace  = document.getElementById('workspace');
+  const report     = document.getElementById('report');
+  const reportBadge= document.getElementById('reportBadge');
+  const previewImg = document.getElementById('previewImg');
+  const previewBadge=document.getElementById('previewBadge');
+  const fileMeta   = document.getElementById('fileMeta');
+  const scrubBtn   = document.getElementById('scrubBtn');
+  const resetBtn   = document.getElementById('resetBtn');
+  const actionbar  = document.getElementById('actionbar');
+  const resultNote = document.getElementById('resultNote');
+  const resultNoteText = document.getElementById('resultNoteText');
+
+  let currentFile = null;
+  let currentImage = null;        // loaded HTMLImageElement
+  let currentOrientation = 1;
+  let currentTags = null;
+  let objectUrls = [];
+
+  // ---------- Helpers ----------
+  function fmtSize(bytes){
+    if(bytes < 1024) return bytes + ' B';
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(2) + ' MB';
+  }
+  function trackUrl(url){ objectUrls.push(url); return url; }
+  function clearUrls(){ objectUrls.forEach(u=>URL.revokeObjectURL(u)); objectUrls = []; }
+
+  // ---------- Minimal EXIF reader (JPEG / TIFF) ----------
+  // Returns { make, model, lens, dateTime, software, orientation, gps:{lat,lon} } or null
+  function parseExif(buffer){
+    try{
+      const view = new DataView(buffer);
+      if(view.byteLength < 4 || view.getUint16(0) !== 0xFFD8) return null; // not a JPEG
+      let offset = 2;
+      const len = view.byteLength;
+      while(offset < len - 1){
+        if(view.getUint8(offset) !== 0xFF) { offset++; continue; }
+        const marker = view.getUint16(offset);
+        if(marker === 0xFFDA) break;            // start of scan
+        if(marker === 0xFFE1){                   // APP1
+          return parseApp1(view, offset + 4);
+        }
+        const size = view.getUint16(offset + 2);
+        if(size < 2) break;
+        offset += 2 + size;
+      }
+      return null;
+    }catch(e){ return null; }
+  }
+
+  function parseApp1(view, start){
+    // Expect "Exif\0\0"
+    if(view.getUint32(start) !== 0x45786966) return null; // 'Exif'
+    const tiff = start + 6;
+    const byteOrder = view.getUint16(tiff);
+    let little;
+    if(byteOrder === 0x4949) little = true;
+    else if(byteOrder === 0x4D4D) little = false;
+    else return null;
+
+    const get16 = (p)=>view.getUint16(p, little);
+    const get32 = (p)=>view.getUint32(p, little);
+
+    if(get16(tiff + 2) !== 0x002A) return null;
+    const ifd0 = tiff + get32(tiff + 4);
+
+    const out = { make:null, model:null, lens:null, dateTime:null, software:null, orientation:1, gps:null };
+
+    function readValue(entry){
+      const type = get16(entry + 2);
+      const count = get32(entry + 4);
+      const sizes = {1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
+      const tsize = sizes[type] || 1;
+      const total = tsize * count;
+      const dataPtr = total <= 4 ? (entry + 8) : (tiff + get32(entry + 8));
+      if(type === 2){ // ASCII
+        let s = '';
+        for(let i=0;i<count;i++){
+          const c = view.getUint8(dataPtr + i);
+          if(c === 0) break;
+          s += String.fromCharCode(c);
+        }
+        return s.trim();
+      }
+      if(type === 3){ return get16(dataPtr); }      // SHORT
+      if(type === 4){ return get32(dataPtr); }      // LONG
+      if(type === 5){ // RATIONAL (array)
+        const arr = [];
+        for(let i=0;i<count;i++){
+          const num = get32(dataPtr + i*8);
+          const den = get32(dataPtr + i*8 + 4);
+          arr.push(den === 0 ? 0 : num/den);
+        }
+        return count === 1 ? arr[0] : arr;
+      }
+      return null;
+    }
+
+    function readIFD(ifdPtr, handler){
+      const n = get16(ifdPtr);
+      for(let i=0;i<n;i++){
+        const entry = ifdPtr + 2 + i*12;
+        const tag = get16(entry);
+        handler(tag, entry);
+      }
+    }
+
+    let exifIfdPtr = null, gpsIfdPtr = null;
+    readIFD(ifd0, (tag, entry)=>{
+      switch(tag){
+        case 0x010F: out.make = readValue(entry); break;
+        case 0x0110: out.model = readValue(entry); break;
+        case 0x0112: out.orientation = readValue(entry) || 1; break;
+        case 0x0131: out.software = readValue(entry); break;
+        case 0x0132: out.dateTime = readValue(entry); break;
+        case 0x8769: exifIfdPtr = tiff + readValue(entry); break;
+        case 0x8825: gpsIfdPtr = tiff + readValue(entry); break;
+      }
+    });
+
+    if(exifIfdPtr){
+      readIFD(exifIfdPtr, (tag, entry)=>{
+        switch(tag){
+          case 0x9003: out.dateTime = readValue(entry) || out.dateTime; break; // DateTimeOriginal
+          case 0xA434: out.lens = readValue(entry); break;                     // LensModel
+          case 0x0110: out.model = out.model || readValue(entry); break;
+        }
+      });
+    }
+
+    if(gpsIfdPtr){
+      let latRef=null, lonRef=null, lat=null, lon=null;
+      readIFD(gpsIfdPtr, (tag, entry)=>{
+        switch(tag){
+          case 0x0001: latRef = readValue(entry); break;
+          case 0x0002: lat = readValue(entry); break;
+          case 0x0003: lonRef = readValue(entry); break;
+          case 0x0004: lon = readValue(entry); break;
+        }
+      });
+      const toDeg = (a)=> Array.isArray(a) ? (a[0] + a[1]/60 + a[2]/3600) : null;
+      let latD = toDeg(lat), lonD = toDeg(lon);
+      if(latD != null && lonD != null){
+        if(latRef === 'S') latD = -latD;
+        if(lonRef === 'W') lonD = -lonD;
+        out.gps = { lat: latD, lon: lonD };
+      }
+    }
+
+    return out;
+  }
+
+  function hasAnyTags(t){
+    if(!t) return false;
+    return !!(t.gps || t.make || t.model || t.lens || t.dateTime || t.software);
+  }
+
+  // ---------- Report rendering ----------
+  function renderReport(t){
+    report.classList.remove('cleaned');
+    reportBadge.textContent = 'Exposed';
+    reportBadge.classList.remove('clean');
+
+    if(!hasAnyTags(t)){
+      report.innerHTML = '<div class="report-empty">No EXIF metadata found in this image.<br>It may already be clean, or saved in a format that doesn\'t carry EXIF. You can still download a re-saved copy below to be certain.</div>';
+      return;
+    }
+
+    const rows = [];
+    if(t.gps){
+      const lat = t.gps.lat.toFixed(6), lon = t.gps.lon.toFixed(6);
+      const map = 'https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'#map=15/'+lat+'/'+lon;
+      rows.push(row('Location',
+        '<span class="lead">'+lat+', '+lon+'</span>' +
+        '<small>This is where the photo was taken. <a href="'+map+'" target="_blank" rel="noopener noreferrer">open in map ↗</a></small>'));
+    }
+    if(t.make || t.model){
+      rows.push(row('Device', escapeHtml([t.make, t.model].filter(Boolean).join(' '))));
+    }
+    if(t.lens){ rows.push(row('Lens', escapeHtml(t.lens))); }
+    if(t.dateTime){ rows.push(row('Taken', escapeHtml(t.dateTime))); }
+    if(t.software){ rows.push(row('Software', escapeHtml(t.software))); }
+    if(t.orientation && t.orientation !== 1){ rows.push(row('Orientation', 'Tag #'+t.orientation+' (will be applied to pixels)')); }
+
+    report.innerHTML = rows.join('');
+  }
+
+  function renderCleanedReport(){
+    report.classList.add('cleaned');
+    reportBadge.textContent = 'Cleared';
+    reportBadge.classList.add('clean');
+    report.innerHTML = '<div class="report-empty" style="color:var(--mint);">All metadata removed.<br>The clean copy carries no location, device, or timestamp tags.</div>';
+  }
+
+  function row(k, vHtml){
+    return '<div class="row"><div class="k">'+k+'</div><div class="v">'+vHtml+'</div></div>';
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- File handling ----------
+  function handleFile(file){
+    if(!file) return;
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){
+      if(/heic|heif/i.test(file.type) || /\.heic$/i.test(file.name)){
+        alert('HEIC photos aren\'t supported by browsers yet. Export to JPEG first, then drop it here.');
+      }else{
+        alert('Please choose a JPEG, PNG, or WebP image.');
+      }
+      return;
+    }
+
+    resetResult();
+    currentFile = file;
+
+    const reader = new FileReader();
+    reader.onload = function(e){
+      currentTags = (file.type === 'image/jpeg') ? parseExif(e.target.result) : null;
+      currentOrientation = (currentTags && currentTags.orientation) ? currentTags.orientation : 1;
+      renderReport(currentTags);
+
+      const url = trackUrl(URL.createObjectURL(file));
+      const img = new Image();
+      img.onload = function(){
+        currentImage = img;
+        previewImg.src = url;
+        fileMeta.innerHTML =
+          '<span>File: <b>'+escapeHtml(file.name)+'</b></span>' +
+          '<span>Size: <b id="origSize">'+fmtSize(file.size)+'</b></span>' +
+          '<span>Dimensions: <b>'+img.naturalWidth+'×'+img.naturalHeight+'</b></span>';
+        workspace.classList.add('on');
+        scrubBtn.disabled = false;
+        scrubBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Scrub metadata';
+        workspace.scrollIntoView({behavior:'smooth', block:'nearest'});
+      };
+      img.onerror = function(){ alert('That image could not be read. Try a different file.'); };
+      img.src = url;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // ---------- Orientation-aware canvas ----------
+  function drawOriented(img, orientation){
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+    const w = img.naturalWidth, h = img.naturalHeight;
+    if(orientation >= 5 && orientation <= 8){ c.width = h; c.height = w; }
+    else { c.width = w; c.height = h; }
+    switch(orientation){
+      case 2: ctx.transform(-1,0,0,1,w,0); break;
+      case 3: ctx.transform(-1,0,0,-1,w,h); break;
+      case 4: ctx.transform(1,0,0,-1,0,h); break;
+      case 5: ctx.transform(0,1,1,0,0,0); break;
+      case 6: ctx.transform(0,1,-1,0,h,0); break;
+      case 7: ctx.transform(0,-1,-1,0,h,w); break;
+      case 8: ctx.transform(0,-1,1,0,0,w); break;
+      default: break;
+    }
+    ctx.drawImage(img,0,0);
+    return c;
+  }
+
+  // ---------- Scrub ----------
+  function scrub(){
+    if(!currentImage || !currentFile) return;
+    actionbar.innerHTML = '<span class="processing"><span class="spinner"></span>Scrubbing…</span>';
+
+    setTimeout(function(){
+      const canvas = drawOriented(currentImage, currentOrientation);
+      const isPng = currentFile.type === 'image/png';
+      const outType = isPng ? 'image/png' : 'image/jpeg';
+      const quality = isPng ? undefined : 0.92;
+
+      canvas.toBlob(function(blob){
+        if(!blob){ alert('Something went wrong while saving. Try again.'); restoreActionbar(); return; }
+
+        // Verify the result is clean (JPEG path)
+        const verify = new FileReader();
+        verify.onload = function(ev){
+          const after = (outType === 'image/jpeg') ? parseExif(ev.target.result) : null;
+          const stillTagged = hasAnyTags(after);
+
+          const url = trackUrl(URL.createObjectURL(blob));
+          const baseName = currentFile.name.replace(/\.[^.]+$/, '');
+          const ext = isPng ? 'png' : 'jpg';
+          const dlName = baseName + '-scrubbed.' + ext;
+
+          // Update UI to cleaned state
+          renderCleanedReport();
+          previewBadge.style.display = '';
+          const orig = document.getElementById('origSize');
+          fileMeta.insertAdjacentHTML('beforeend',
+            '<span>Clean copy: <b>'+fmtSize(blob.size)+'</b></span>');
+
+          actionbar.innerHTML = '';
+          const dl = document.createElement('a');
+          dl.className = 'btn btn-primary';
+          dl.href = url;
+          dl.download = dlName;
+          dl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg> Download clean photo';
+          const again = document.createElement('button');
+          again.className = 'btn btn-ghost';
+          again.textContent = 'Choose another photo';
+          again.addEventListener('click', reset);
+          actionbar.appendChild(dl);
+          actionbar.appendChild(again);
+
+          resultNoteText.textContent = stillTagged
+            ? 'Saved. Most metadata removed from this copy.'
+            : 'Verified: the clean copy contains no EXIF metadata.';
+          resultNote.classList.add('on');
+        };
+        verify.readAsArrayBuffer(blob);
+      }, outType, quality);
+    }, 280);
+  }
+
+  function restoreActionbar(){
+    actionbar.innerHTML = '';
+    const b = document.createElement('button');
+    b.className='btn btn-primary'; b.id='scrubBtn';
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Scrub metadata';
+    b.addEventListener('click', scrub);
+    const g = document.createElement('button');
+    g.className='btn btn-ghost'; g.textContent='Choose another photo';
+    g.addEventListener('click', reset);
+    actionbar.appendChild(b); actionbar.appendChild(g);
+  }
+
+  function resetResult(){
+    resultNote.classList.remove('on');
+    previewBadge.style.display = 'none';
+  }
+
+  function reset(){
+    clearUrls();
+    currentFile = null; currentImage = null; currentTags = null; currentOrientation = 1;
+    workspace.classList.remove('on');
+    fileInput.value = '';
+    resetResult();
+    restoreActionbar();
+    document.querySelector('.hero').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // ---------- Wire up ----------
+  fileInput.addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+  dropzone.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fileInput.click(); }
+  });
+
+  ['dragenter','dragover'].forEach(ev=>{
+    dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(ev=>{
+    dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); });
+  });
+  dropzone.addEventListener('drop', e=>{
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+  // Prevent the browser from opening dropped files anywhere else
+  window.addEventListener('dragover', e=>e.preventDefault());
+  window.addEventListener('drop', e=>e.preventDefault());
+
+  scrubBtn.addEventListener('click', scrub);
+  resetBtn.addEventListener('click', reset);
+})();
+</script>
+</body>
+</html>
